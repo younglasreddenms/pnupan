@@ -1,0 +1,126 @@
+📘 网盘后端 API 接口文档
+基础地址（Base URL）
+
+http://localhost:8000/api
+📂 1. 获取指定目录下的文件/文件夹列表
+GET /api/tree
+用于获取某个路径下的子文件和文件夹，支持递进式文件浏览（类似文件资源管理器的展开）。
+
+🔸 请求参数
+参数名	类型	是否必填	说明	示例
+path	string	否	查询路径，默认为根目录 /	/, /视频, /电影/2023
+
+✅ 示例请求
+
+GET http://localhost:8000/api/tree?path=/视频
+🔹 成功响应
+
+{
+  "status": "success",
+  "data": [
+    {
+      "name": "2023-公开课.mp4",
+      "neid": 123456,
+      "path": "/视频/2023-公开课.mp4",
+      "type": "file"
+    },
+    {
+      "name": "课程合集",
+      "neid": 654321,
+      "path": "/视频/课程合集",
+      "type": "dir"
+    }
+  ]
+}
+🔻 错误响应示例
+路径不存在：
+
+
+{
+  "detail": "路径不存在: /不存在路径"
+}
+请求的是一个文件（非目录）：
+
+
+{
+  "detail": "该路径不是目录"
+}
+🔗 2. 获取某个文件的直链（用于在线播放或下载）
+GET /api/link
+根据文件的路径与其唯一标识 neid 获取网盘服务器返回的可用直链 URL，用于播放视频、预览文件或下载。
+
+🔸 请求参数
+参数名	类型	是否必填	说明	示例
+path	string	✅	文件的完整路径	/视频/2023-公开课.mp4
+neid	string	✅	文件的 neid 唯一 ID	123456
+
+✅ 示例请求
+
+GET http://localhost:8000/api/link?path=/视频/2023-公开课.mp4&neid=123456
+🔹 成功响应
+
+{
+  "status": "success",
+  "url": "https://pan.bnuz.edu.cn:10081/actual-file-link.mp4?token=abc123..."
+}
+前端可以将该 url 直接设置为 <video>、<a href>、<iframe> 等资源地址进行播放或下载。
+
+🔻 错误响应示例
+json
+复制
+编辑
+{
+  "detail": "获取失败"
+}
+或
+
+{
+  "detail": "请求失败: timeout"
+}
+🔁 2. 刷新指定目录（手动更新）
+接口
+pgsql
+复制
+编辑
+GET /api/refresh
+描述
+手动触发爬虫逻辑，仅重新爬取并更新 directory_tree.json 中指定路径的内容（不会全量爬取整个网盘）。
+
+请求参数
+参数名	类型	必填	描述	示例
+path	string	否	要刷新目录路径，默认是 /	/视频
+
+成功响应
+{
+  "status": "success",
+  "message": "目录 /视频 已刷新"
+}
+错误响应
+路径不是目录：
+{
+  "detail": "指定路径不是目录"
+}
+路径不存在或异常：
+{
+  "detail": "刷新失败: <错误信息>"
+}
+
+🛡️ 鉴权说明
+当前接口不需要登录鉴权，但依赖本地的 token 文件 token.json，其内容如下（后端会自动读取）：
+
+
+{
+  "S": "你的S令牌",
+  "X-LENOVO-SESS-ID": "你的会话ID"
+}
+
+
+📌 前端集成建议
+使用 /api/tree 进行路径导航，构造树状浏览界面；
+
+每次点击目录节点时调用 /api/tree?path=... 展开子目录；
+
+每次点击文件节点时调用 /api/link 获取实际资源 URL 进行播放；
+
+使用 /api/refresh 配合“刷新”按钮或定时更新。
+

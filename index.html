@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云盘文件浏览器 - 高级管理版</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --danger: #e63946;
+            --border-radius: 12px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo i {
+            font-size: 2.2rem;
+            color: var(--primary);
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            border: 2px solid var(--primary);
+            background: transparent;
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+       
+
+        .main-layout {
+            display: flex;
+            gap: 30px;
+            height: calc(100vh - 180px);
+        }
+
+        .sidebar {
+            flex: 0 0 300px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 15px 0;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--light-gray);
+            font-weight: 500;
+        }
+
+        .breadcrumb a {
+            color: var(--gray);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .breadcrumb a:hover {
+            color: var(--primary);
+        }
+
+        .breadcrumb .current {
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        .tree-view {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tree-item {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .tree-item:hover {
+            background: var(--light-gray);
+        }
+
+        .tree-item.active {
+            background: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .tree-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .content {
+            flex: 1;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .content-header h2 {
+            font-size: 1.5rem;
+            color: var(--dark);
+        }
+
+        .file-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 25px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .file-card {
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            transition: var(--transition);
+            cursor: pointer;
+            background: white;
+            border: 1px solid var(--light-gray);
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+            border-color: var(--accent);
+        }
+
+        .file-preview {
+            height: 130px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .file-preview .icon {
+            font-size: 3rem;
+            color: var(--primary);
+            opacity: 0.7;
+        }
+
+        .file-info {
+            padding: 12px;
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 0.9rem;
+        }
+
+        .file-type {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-top: 3px;
+        }
+
+        /* 模态框通用样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            background: var(--light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .modal-header .title {
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .modal-header .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+            transition: var(--transition);
+        }
+
+        .modal-header .close-btn:hover {
+            color: var(--dark);
+        }
+
+        .modal-body {
+            flex: 1;
+            padding: 25px;
+            overflow: auto;
+        }
+
+        /* 预览模态框特定样式 */
+        .preview-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        .preview-container video {
+            width: 100%;
+            max-height: 70vh;
+        }
+
+        .preview-container img {
+            max-width: 100%;
+            max-height: 70vh;
+        }
+
+        .preview-container iframe {
+            width: 100%;
+            height: 70vh;
+            border: none;
+        }
+
+        .video-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .video-controls button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .video-controls button:hover {
+            background: var(--secondary);
+        }
+
+        /* 令牌更新模态框样式 */
+        .token-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .form-group input {
+            padding: 12px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            background: var(--light);
+            border-top: 1px solid var(--light-gray);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* 空状态和加载状态 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            color: var(--gray);
+            padding: 40px;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: var(--light-gray);
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(67, 97, 238, 0.2);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .file-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 15px 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .notification.error {
+            background: var(--danger);
+        }
+        
+        .notification.warning {
+            background: var(--warning);
+        }
+
+        @media (max-width: 992px) {
+            .main-layout {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .file-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .controls {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .controls .btn {
+                flex: 1;
+                min-width: 140px;
+            }
+        }
+        
+        .video-container {
+            width: 100%;
+            position: relative;
+        }
+        
+        .video-info {
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        
+        .video-info span {
+            display: inline-block;
+            margin-right: 15px;
+        }
+        
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-cloud"></i>
+                <h1>云盘文件浏览器 </h1>
+            </div>
+            <div class="controls">
+                <button class="btn" id="refreshBtn">
+                    <i class="fas fa-sync-alt"></i>
+                    刷新当前目录
+                </button>
+                <button class="btn btn-warning" id="refreshAllBtn">
+                    <i class="fas fa-redo-alt"></i>
+                    更新全部目录
+                </button>
+                <button class="btn btn-outline" id="goHomeBtn">
+                    <i class="fas fa-home"></i>
+                    返回首页
+                </button>
+                <button class="btn btn-admin" id="updateTokenBtn">
+                    <i class="fas fa-key"></i>
+                    更新令牌
+                </button>
+            </div>
+        </header>
+
+        <div class="main-layout">
+            <div class="sidebar">
+                <div class="breadcrumb" id="breadcrumb">
+                    <a href="#" data-path="/">全部文件</a>
+                </div>
+                
+                <div class="tree-view" id="treeView">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+                
+            </div>
+
+            <div class="content">
+                <div class="content-header">
+                    <h2 id="currentDir">全部文件</h2>
+                    <div class="file-count" id="fileCount">加载中...</div>
+                </div>
+                
+                <div class="file-grid" id="fileGrid">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 文件预览模态框 -->
+    <div class="modal preview-modal" id="previewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="title" id="previewTitle">文件预览</div>
+                <button class="close-btn" id="closePreview">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-container" id="previewContainer">
+                    <!-- 预览内容动态加载 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 令牌更新模态框 -->
+    <div class="modal" id="tokenModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="title"><i class="fas fa-key"></i> 更新访问令牌</div>
+                <button class="close-btn" id="closeTokenModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="token-form">
+                    <div class="form-group">
+                        <label for="sess-id">X-LENOVO-SESS-ID:</label>
+                        <input type="text" id="sess-id" placeholder="请输入新的 X-LENOVO-SESS-ID">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="s-token">S 参数:</label>
+                        <input type="text" id="s-token" placeholder="请输入新的 S 参数">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>令牌有效期:</label>
+                        <div style="padding: 12px 15px; background: #f8f9fa; border-radius: 8px;">
+                            令牌通常有效期为 <strong>24小时</strong>，请定期更新
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelTokenUpdate">
+                    <i class="fas fa-times"></i> 取消
+                </button>
+                <button class="btn" id="submitTokenUpdate">
+                    <i class="fas fa-save"></i> 保存令牌
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM元素
+        const treeView = document.getElementById('treeView');
+        const fileGrid = document.getElementById('fileGrid');
+        const breadcrumb = document.getElementById('breadcrumb');
+        const currentDir = document.getElementById('currentDir');
+        const fileCount = document.getElementById('fileCount');
+        const previewModal = document.getElementById('previewModal');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewTitle = document.getElementById('previewTitle');
+        const closePreview = document.getElementById('closePreview');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const refreshAllBtn = document.getElementById('refreshAllBtn');
+        const goHomeBtn = document.getElementById('goHomeBtn');
+        const updateTokenBtn = document.getElementById('updateTokenBtn');
+        const tokenModal = document.getElementById('tokenModal');
+        const closeTokenModal = document.getElementById('closeTokenModal');
+        const cancelTokenUpdate = document.getElementById('cancelTokenUpdate');
+        const submitTokenUpdate = document.getElementById('submitTokenUpdate');
+        const sessIdInput = document.getElementById('sess-id');
+        const sTokenInput = document.getElementById('s-token');
+        
+        // const BASE_URL = 'https://api.435038537.xyz';
+        const BASE_URL = 'http://localhost:8000'; // 本地测试地址
+        // 当前路径
+        let currentPath = '/';
+        let treeData = {};
+        let activeVideoElement = null;
+        let currentBlobUrl = null;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDirectory(currentPath);
+            
+            closePreview.addEventListener('click', closePreviewModal);
+            closeTokenModal.addEventListener('click', closeTokenUpdateModal);
+            cancelTokenUpdate.addEventListener('click', closeTokenUpdateModal);
+            
+            refreshBtn.addEventListener('click', refreshCurrentDirectory);
+            refreshAllBtn.addEventListener('click', refreshAllDirectories);
+            goHomeBtn.addEventListener('click', () => loadDirectory('/'));
+            updateTokenBtn.addEventListener('click', showTokenUpdateModal);
+            submitTokenUpdate.addEventListener('click', updateToken);
+            
+            // 点击模态框外部关闭
+            previewModal.addEventListener('click', (e) => {
+                if (e.target === previewModal) {
+                    closePreviewModal();
+                }
+            });
+            
+            tokenModal.addEventListener('click', (e) => {
+                if (e.target === tokenModal) {
+                    closeTokenUpdateModal();
+                }
+            });
+        });
+
+        // 关闭预览模态框
+        function closePreviewModal() {
+            previewModal.classList.remove('active');
+            if (activeVideoElement) {
+                activeVideoElement.pause();
+                activeVideoElement.src = '';
+                activeVideoElement.load();
+                activeVideoElement = null;
+            }
+            if (currentBlobUrl) {
+                URL.revokeObjectURL(currentBlobUrl);
+                currentBlobUrl = null;
+            }
+            previewContainer.innerHTML = '';
+        }
+
+        // 关闭令牌更新模态框
+        function closeTokenUpdateModal() {
+            tokenModal.classList.remove('active');
+            sessIdInput.value = '';
+            sTokenInput.value = '';
+        }
+
+        // 显示令牌更新模态框
+        function showTokenUpdateModal() {
+            tokenModal.classList.add('active');
+        }
+
+        // 加载目录内容
+        async function loadDirectory(path) {
+            currentPath = path;
+            currentDir.textContent = path === '/' ? '全部文件' : path.split('/').pop();
+            treeView.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            fileGrid.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            
+            try {
+                const response = await fetch(`${BASE_URL}/api/tree?path=${encodeURIComponent(path)}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                renderTreeView(data.data);
+                renderFileGrid(data.data);
+                updateBreadcrumb();
+                fileCount.textContent = `${data.data.length}个项目`;
+                
+            } catch (error) {
+                console.error('加载目录失败:', error);
+                showNotification(`加载失败: ${error.message}`, 'error');
+                
+                treeView.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>加载失败</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                
+                fileGrid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>加载失败</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 渲染树形视图
+        function renderTreeView(files) {
+            const folders = files.filter(item => item.type === 'dir');
+            
+            if (folders.length === 0) {
+                treeView.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-folder-open"></i>
+                        <h3>没有子文件夹</h3>
+                        <p>此文件夹中没有子文件夹</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            folders.forEach(folder => {
+                html += `
+                    <div class="tree-item" data-path="${folder.path}">
+                        <i class="fas fa-folder"></i>
+                        <span>${folder.name}</span>
+                    </div>
+                `;
+            });
+            
+            treeView.innerHTML = html;
+            
+            treeView.querySelectorAll('.tree-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const path = item.dataset.path;
+                    loadDirectory(path);
+                });
+            });
+        }
+
+        // 渲染文件网格
+        function renderFileGrid(files) {
+            if (files.length === 0) {
+                fileGrid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-folder-open"></i>
+                        <h3>文件夹为空</h3>
+                        <p>此文件夹中没有文件或子文件夹</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            files.forEach(file => {
+                const isDir = file.type === 'dir';
+                let icon = 'file';
+                let badge = '';
+                let typeText = isDir ? `文件夹` : '文件';
+                
+                if (!isDir) {
+                    const ext = file.name.split('.').pop().toLowerCase();
+                    
+                    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+                        icon = 'image';
+                        badge = `<div class="file-badge">${ext.toUpperCase()}</div>`;
+                        typeText = `图片`;
+                    } else if (['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(ext)) {
+                        icon = 'film';
+                        badge = `<div class="file-badge">${ext.toUpperCase()}</div>`;
+                        typeText = `视频`;
+                    } else if (ext === 'pdf') {
+                        icon = 'file-pdf';
+                        badge = `<div class="file-badge">PDF</div>`;
+                        typeText = `PDF文档`;
+                    }
+                }
+                
+                html += `
+                    <div class="file-card" data-type="${file.type}" data-path="${file.path}" data-neid="${file.neid || ''}">
+                        <div class="file-preview">
+                            <i class="fas fa-${isDir ? 'folder' : icon} icon"></i>
+                            ${badge}
+                        </div>
+                        <div class="file-info">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-type">${typeText}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            fileGrid.innerHTML = html;
+            fileGrid.addEventListener('click', handleFileClick);
+        }
+
+        // 处理文件点击
+        function handleFileClick(e) {
+            const fileCard = e.target.closest('.file-card');
+            if (!fileCard) return;
+            
+            const type = fileCard.dataset.type;
+            const path = fileCard.dataset.path;
+            
+            if (type === 'dir') {
+                loadDirectory(path);
+            } else {
+                const fileName = fileCard.querySelector('.file-name').textContent;
+                const neid = fileCard.dataset.neid;
+                previewFile(path, fileName, neid);
+            }
+        }
+
+        // 更新面包屑导航
+        function updateBreadcrumb() {
+            const parts = currentPath.split('/').filter(part => part);
+            let breadcrumbHTML = `<a href="#" data-path="/">全部文件</a>`;
+            let currentPathBuilder = '';
+            
+            parts.forEach((part, index) => {
+                currentPathBuilder += `/${part}`;
+                if (index === parts.length - 1) {
+                    breadcrumbHTML += `<span><i class="fas fa-chevron-right"></i></span>
+                                      <span class="current">${part}</span>`;
+                } else {
+                    breadcrumbHTML += `<span><i class="fas fa-chevron-right"></i></span>
+                                      <a href="#" data-path="${currentPathBuilder}">${part}</a>`;
+                }
+            });
+            
+            breadcrumb.innerHTML = breadcrumbHTML;
+            
+            breadcrumb.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const path = link.dataset.path;
+                    loadDirectory(path);
+                });
+            });
+        }
+
+        // 预览文件
+        async function previewFile(filePath, fileName, neid) {
+            previewTitle.textContent = '加载中...';
+            previewContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            previewModal.classList.add('active');
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/link?path=${encodeURIComponent(filePath)}&neid=${neid}`);
+                if (!response.ok) {
+                    throw new Error(`获取直链失败: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (data.status !== 'success') {
+                    throw new Error('获取直链失败');
+                }
+
+                const fileUrl = data.url;
+                const ext = fileName.split('.').pop().toLowerCase();
+
+                previewTitle.textContent = fileName;
+                previewContainer.innerHTML = '';
+
+                if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+                    previewContainer.innerHTML = `<img src="${fileUrl}" alt="${fileName}">`;
+                } else if (['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(ext)) {
+                    previewContainer.innerHTML = `
+                        <div class="video-container">
+                            <video id="videoPlayer" controls autoplay>
+                                <source src="${fileUrl}" type="video/${ext === 'webm' ? 'webm' : 'mp4'}">
+                                您的浏览器不支持视频播放
+                            </video>
+                            <div class="video-controls">
+                                <button id="downloadVideo"><i class="fas fa-download"></i> 下载视频</button>
+                                <button id="fullscreenBtn"><i class="fas fa-expand"></i> 全屏</button>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <span>格式: ${ext.toUpperCase()}</span>
+                            <span id="videoResolution">分辨率: 加载中...</span>
+                            <span id="videoDuration">时长: 加载中...</span>
+                        </div>
+                    `;
+
+                    const videoPlayer = document.getElementById('videoPlayer');
+                    activeVideoElement = videoPlayer;
+
+                    // 直接使用流媒体
+                    videoPlayer.src = fileUrl;
+                    videoPlayer.load();
+
+                    // 下载按钮
+                    const downloadBtn = document.getElementById('downloadVideo');
+                    downloadBtn.addEventListener('click', () => {
+                        const a = document.createElement('a');
+                        a.href = fileUrl;
+                        a.download = fileName;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    });
+
+                    // 全屏按钮
+                    const fullscreenBtn = document.getElementById('fullscreenBtn');
+                    fullscreenBtn.addEventListener('click', () => {
+                        if (videoPlayer.requestFullscreen) {
+                            videoPlayer.requestFullscreen();
+                        } else if (videoPlayer.mozRequestFullScreen) {
+                            videoPlayer.mozRequestFullScreen();
+                        } else if (videoPlayer.webkitRequestFullscreen) {
+                            videoPlayer.webkitRequestFullscreen();
+                        } else if (videoPlayer.msRequestFullscreen) {
+                            videoPlayer.msRequestFullscreen();
+                        }
+                    });
+
+                    // 更新视频信息
+                    videoPlayer.addEventListener('loadedmetadata', () => {
+                        const resolutionSpan = document.getElementById('videoResolution');
+                        const durationSpan = document.getElementById('videoDuration');
+
+                        if (videoPlayer.videoWidth && videoPlayer.videoHeight) {
+                            resolutionSpan.textContent = `分辨率: ${videoPlayer.videoWidth}x${videoPlayer.videoHeight}`;
+                        } else {
+                            resolutionSpan.textContent = `分辨率: 未知`;
+                        }
+
+                        if (videoPlayer.duration) {
+                            const duration = Math.floor(videoPlayer.duration);
+                            const minutes = Math.floor(duration / 60);
+                            const seconds = duration % 60;
+                            durationSpan.textContent = `时长: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                        } else {
+                            durationSpan.textContent = `时长: 未知`;
+                        }
+                    });
+
+                    // 错误处理
+                    videoPlayer.addEventListener('error', (e) => {
+                        console.error('视频播放错误:', e);
+                        previewContainer.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <h3>播放失败</h3>
+                                <p>无法播放此视频，请尝试下载</p>
+                                <a href="${fileUrl}" class="btn" target="_blank" style="margin-top: 20px;">
+                                    <i class="fas fa-download"></i> 下载视频
+                                </a>
+                            </div>
+                        `;
+                    });
+
+                    // 播放结束
+                    videoPlayer.addEventListener('ended', () => {
+                        showNotification('视频播放结束', 'info');
+                    });
+
+                } else if (ext === 'pdf') {
+                    previewContainer.innerHTML = `<iframe src="${fileUrl}"></iframe>`;
+                } else {
+                    previewContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-file"></i>
+                            <h3>不支持预览</h3>
+                            <p>此文件类型不支持在线预览</p>
+                            <a href="${fileUrl}" class="btn" target="_blank" style="margin-top: 20px;">
+                                <i class="fas fa-download"></i> 下载文件
+                            </a>
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('预览文件失败:', error);
+                previewContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>预览失败</h3>
+                        <p>${error.message}</p>
+                        <button class="btn" style="margin-top: 20px;" onclick="refreshCurrentDirectory()">
+                            <i class="fas fa-redo"></i> 重试
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // 刷新当前目录
+        async function refreshCurrentDirectory() {
+            const originalContent = fileGrid.innerHTML;
+            fileGrid.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            
+            try {
+                const refreshResponse = await fetch(`${BASE_URL}/api/refresh?path=${encodeURIComponent(currentPath)}`);
+                if (!refreshResponse.ok) {
+                    throw new Error(`刷新失败: ${refreshResponse.status}`);
+                }
+                
+                const refreshData = await refreshResponse.json();
+                if (refreshData.status !== 'success') {
+                    throw new Error(refreshData.detail || '刷新失败');
+                }
+                
+                await loadDirectory(currentPath);
+                showNotification(`目录 ${currentPath} 已刷新`);
+                
+            } catch (error) {
+                console.error('刷新目录失败:', error);
+                fileGrid.innerHTML = originalContent;
+                showNotification(`刷新失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 刷新所有目录
+        async function refreshAllDirectories() {
+            showNotification('开始刷新所有目录，这可能需要一些时间...', 'info');
+            
+            try {
+                const refreshResponse = await fetch(`${BASE_URL}/api/refresh_all`);
+                if (!refreshResponse.ok) {
+                    throw new Error(`刷新全部目录失败: ${refreshResponse.status}`);
+                }
+                
+                const refreshData = await refreshResponse.json();
+                if (refreshData.status !== 'success') {
+                    throw new Error(refreshData.detail || '刷新全部目录失败');
+                }
+                
+                await loadDirectory(currentPath);
+                showNotification('所有目录已成功刷新！');
+                
+            } catch (error) {
+                console.error('刷新全部目录失败:', error);
+                showNotification(`刷新失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 更新令牌
+        async function updateToken() {
+            const sessId = sessIdInput.value.trim();
+            const sToken = sTokenInput.value.trim();
+
+            if (!sessId || !sToken) {
+                showNotification('请填写完整的令牌信息', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${BASE_URL}/api/update_token`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        X_LENOVO_SESS_ID: sessId,
+                        S: sToken
+                    })
+                });
+
+                const result = await res.json();
+
+                if (res.ok) {
+                    showNotification(result.message);
+                    closeTokenUpdateModal();
+                } else {
+                    showNotification(`更新失败: ${result.detail}`, 'error');
+                }
+            } catch (err) {
+                showNotification(`请求错误: ${err.message}`, 'error');
+            }
+        }
+
+        // 显示通知
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
